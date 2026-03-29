@@ -6,7 +6,8 @@
     "start": "remotion studio",
     "build": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
     "render": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
-    "preview": "remotion preview src/index.tsx"
+    "preview": "remotion preview src/index.tsx",
+    "postinstall": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@remotion/media-utils": "^4.0.434",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
+    "playwright": "^1.40.0",
     "typescript": "^5.9.3"
   }
 }

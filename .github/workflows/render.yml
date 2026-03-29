@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
-
       - name: Download audio file
         if: github.event.inputs.audio_file != ''
         run: |
@@ -38,7 +35,7 @@ jobs:
           curl -L "${{ github.event.inputs.audio_file }}" -o public/default-exe.mp3
 
       - name: Render video
-        run: node node_modules/remotion/dist/index.js render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4
+        run: npm run render
 
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
