@@ -6,10 +6,15 @@ on:
 jobs:
   render:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,7 +26,9 @@ jobs:
         run: npm ci
 
       - name: Render video
-        run: ./node_modules/.bin/remotion render src/index.tsx DEFAULT_EXE out.mp4
+        run: node render.mjs
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
 
       - name: Upload video
         uses: actions/upload-artifact@v4
