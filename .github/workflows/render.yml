@@ -2,14 +2,6 @@ name: Render Video
 
 on:
   workflow_dispatch:
-    inputs:
-      audio_file:
-        description: 'URL to audio file (optional)'
-        required: false
-        default: ''
-  push:
-    branches:
-      - main
 
 jobs:
   render:
@@ -28,33 +20,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: ./node_modules/.bin/playwright install chromium --with-deps
-
-      - name: Download audio file
-
-      - name: Download audio file
-        if: github.event.inputs.audio_file != ''
-        run: |
-          mkdir -p public
-          curl -L "${{ github.event.inputs.audio_file }}" -o public/default-exe.mp3
-
       - name: Render video
-        run: npm run render
+        run: npx remotion render src/index.tsx DEFAULT_EXE out.mp4 --序列=0 --every-nth-frame=1
 
-      - name: Upload video artifact
+      - name: Upload video
         uses: actions/upload-artifact@v4
         with:
-          name: default-exe-video-${{ github.run_number }}
-          path: Outputs/default-exe.mp4
+          name: default-exe-video
+          path: out.mp4
           retention-days: 30
-
-      - name: Create Release
-        if: github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: Outputs/default-exe.mp4
-          name: Render ${{ github.run_number }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
