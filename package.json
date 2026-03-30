@@ -6,8 +6,7 @@
     "start": "remotion studio",
     "build": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
     "render": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
-    "preview": "remotion preview src/index.tsx",
-    "postinstall": "npx playwright install --with-deps chromium"
+    "preview": "remotion preview src/index.tsx"
   },
   "dependencies": {
     "@remotion/media-utils": "^4.0.434",
