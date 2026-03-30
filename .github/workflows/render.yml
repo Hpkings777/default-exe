@@ -22,7 +22,7 @@ jobs:
           npm install --no-package-lock
 
       - name: Render video
-        run: npx remotion render src/index.tsx DEFAULT_EXE out/video.mp4 --overwrite --bundle-cache=false
+        run: npx -y @remotion/cli@4.0.441 remotion render src/index.tsx DEFAULT_EXE out/video.mp4 --overwrite --bundle-cache=false
 
       - name: Upload video
         uses: actions/upload-artifact@v4
