@@ -3,21 +3,20 @@
   "version": "1.0.0",
   "description": "DEFAULT.EXE by PHORIX - Full Music Video Animation",
   "scripts": {
-    "start": "remotion studio",
-    "build": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
-    "render": "remotion render src/index.tsx DEFAULT_EXE Outputs/default-exe.mp4",
-    "preview": "remotion preview src/index.tsx"
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render src/index.tsx DEFAULT_EXE out/video.mp4"
   },
   "dependencies": {
-    "@remotion/media-utils": "^4.0.434",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/media-utils": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "remotion": "^4.0.441"
+    "remotion": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
-    "playwright": "^1.40.0",
     "typescript": "^5.9.3"
   }
 }
