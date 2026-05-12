@@ -2,6 +2,15 @@ name: Render Video
 
 on:
   workflow_dispatch:
+    inputs:
+      composition:
+        description: 'Composition to render'
+        required: true
+        default: 'OHMS_LAW'
+        type: choice
+        options:
+          - OHMS_LAW
+          - DEFAULT_EXE
 
 jobs:
   render:
@@ -21,12 +30,24 @@ jobs:
           sudo apt-get update && sudo apt-get install -y ffmpeg libnss3 libatk-bridge2.0-0 libcups2 libdbus-1-3 libdrm2 libgbm1 libasound2t64
           npm install --no-package-lock
 
+      - name: Create output directory
+        run: mkdir -p out
+
       - name: Render video
-        run: npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx DEFAULT_EXE out/video.mp4 --overwrite --bundle-cache=false
+        run: |
+          if [ "${{ inputs.composition }}" = "OHMS_LAW" ]; then
+            echo "Rendering Ohm's Law animation..."
+            npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx OHMS_LAW out/ohms-law.mp4 --overwrite --bundle-cache=false
+          else
+            echo "Rendering DEFAULT_EXE..."
+            npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx DEFAULT_EXE out/default-exe.mp4 --overwrite --bundle-cache=false
+          fi
 
       - name: Upload video
         uses: actions/upload-artifact@v4
         with:
-          name: default-exe-video
-          path: out/video.mp4
+          name: ${{ inputs.composition }}-video-${{ github.run_number }}
+          path: |
+            out/ohms-law.mp4
+            out/default-exe.mp4
           retention-days: 30
