@@ -1,15 +1,17 @@
 {
-  "name": "default-exe-video",
+  "name": "kivora-ohms-law-animation",
   "version": "1.0.0",
-  "description": "DEFAULT.EXE by PHORIX - Full Music Video Animation",
+  "description": "Kivora - Ohm's Law Educational Animation for AI-Powered Learning Platform",
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion bundle",
-    "render": "remotion render src/index.tsx DEFAULT_EXE out/video.mp4"
+    "render": "node render.mjs",
+    "render:cli": "remotion render src/index.tsx OHMS_LAW Outputs/ohms-law-animation.mp4 --overwrite"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
     "@remotion/media-utils": "^4.0.0",
+    "@remotion/transitions": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remotion": "^4.0.0"

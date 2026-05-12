@@ -1,330 +1,293 @@
-import React, {useMemo} from 'react';
-import {useCurrentFrame, useVideoConfig} from 'remotion';
-import {interpolate, spring} from 'remotion';
-import {COLORS} from '../constants';
+import React, { useMemo } from "react";
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 
 interface BackgroundGridProps {
-	opacity?: number;
-	gridSize?: number;
-	color?: string;
-	animate?: boolean;
+  opacity?: number;
+  spacing?: number;
+  animated?: boolean;
 }
 
 export const BackgroundGrid: React.FC<BackgroundGridProps> = ({
-	opacity = 0.15,
-	gridSize = 60,
-	color = COLORS.dim,
-	animate = true,
+  opacity = 0.1,
+  spacing = 50,
+  animated = true
 }) => {
-	const frame = useCurrentFrame();
-	const {width, height} = useVideoConfig();
-
-	const offsetY = animate ? (frame * 0.5) % gridSize : 0;
-
-	return (
-		<div
-			style={{
-				position: 'absolute',
-				top: 0,
-				left: 0,
-				right: 0,
-				bottom: 0,
-				backgroundColor: COLORS.bg,
-				overflow: 'hidden',
-			}}
-		>
-			<svg
-				width="100%"
-				height="100%"
-				style={{
-					position: 'absolute',
-					opacity,
-					transform: `translateY(${offsetY}px)`,
-				}}
-			>
-				<defs>
-					<pattern
-						id="cyberGrid"
-						width={gridSize}
-						height={gridSize}
-						patternUnits="userSpaceOnUse"
-					>
-						<path
-							d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`}
-							fill="none"
-							stroke={color}
-							strokeWidth="0.5"
-						/>
-					</pattern>
-				</defs>
-				<rect width="100%" height="200%" fill="url(#cyberGrid)" />
-			</svg>
-		</div>
-	);
+  const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
+  
+  const offset = animated ? (frame * 0.5) % spacing : 0;
+  
+  const horizontalLines = Math.ceil(height / spacing) + 1;
+  const verticalLines = Math.ceil(width / spacing) + 1;
+  
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+      }}
+    >
+      <defs>
+        <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00ffff" />
+          <stop offset="50%" stopColor="#0088ff" />
+          <stop offset="100%" stopColor="#00ffff" />
+        </linearGradient>
+      </defs>
+      
+      {Array.from({ length: horizontalLines }, (_, i) => (
+        <line
+          key={`h-${i}`}
+          x1={0}
+          y1={i * spacing + offset}
+          x2={width}
+          y2={i * spacing + offset}
+          stroke={`url(#gridGradient)`}
+          strokeWidth={0.5}
+          opacity={opacity * 0.5}
+        />
+      ))}
+      
+      {Array.from({ length: verticalLines }, (_, i) => (
+        <line
+          key={`v-${i}`}
+          x1={i * spacing + offset}
+          y1={0}
+          x2={i * spacing + offset}
+          y2={height}
+          stroke={`url(#gridGradient)`}
+          strokeWidth={0.5}
+          opacity={opacity * 0.5}
+        />
+      ))}
+    </svg>
+  );
 };
 
-interface PerspectiveGridProps {
-	intensity?: number;
+interface AmbientParticlesProps {
+  count?: number;
+  color?: string;
+  minSize?: number;
+  maxSize?: number;
+  speed?: number;
 }
 
-export const PerspectiveGrid: React.FC<PerspectiveGridProps> = ({
-	intensity = 1,
+export const AmbientParticles: React.FC<AmbientParticlesProps> = ({
+  count = 50,
+  color = "#00ffff",
+  minSize = 1,
+  maxSize = 4,
+  speed = 1
 }) => {
-	const frame = useCurrentFrame();
-	const {width, height} = useVideoConfig();
-
-	const perspectiveOpacity = interpolate(frame, [0, 60], [0, 0.2], {
-		extrapolateRight: 'clamp',
-	});
-
-	const lines = Array.from({length: 20}, (_, i) => i);
-
-	return (
-		<svg
-			width={width}
-			height={height}
-			style={{
-				position: 'absolute',
-				top: 0,
-				left: 0,
-				opacity: perspectiveOpacity * intensity,
-			}}
-		>
-			<defs>
-				<linearGradient
-					id="gridFade"
-					x1="0%"
-					y1="100%"
-					x2="0%"
-					y2="0%"
-				>
-					<stop offset="0%" stopColor={COLORS.primary} stopOpacity="0" />
-					<stop offset="100%" stopColor={COLORS.primary} stopOpacity="0.5" />
-				</linearGradient>
-			</defs>
-
-			{lines.map((i) => {
-				const x = (i / (lines.length - 1)) * width;
-				return (
-					<line
-						key={`v-${i}`}
-						x1={x}
-						y1={height}
-						x2={width / 2}
-						y2={height * 0.3}
-						stroke="url(#gridFade)"
-						strokeWidth="1"
-					/>
-				);
-			})}
-
-			{Array.from({length: 10}, (_, i) => i).map((i) => {
-				const y = height - (i / 9) * height * 0.7;
-				return (
-					<line
-						key={`h-${i}`}
-						x1={0}
-						y1={y}
-						x2={width}
-						y2={y}
-						stroke="url(#gridFade)"
-						strokeWidth="1"
-					/>
-				);
-			})}
-		</svg>
-	);
+  const frame = useCurrentFrame();
+  const { width, height, fps } = useVideoConfig();
+  
+  const particles = Array.from({ length: count }, (_, i) => {
+    const seed = i * 137.508;
+    const baseX = (seed * 0.01) % width;
+    const baseY = (seed * 0.007) % height;
+    const size = minSize + (seed * 0.1) % (maxSize - minSize);
+    const driftSpeed = 0.2 + (seed % 5) * 0.1;
+    const verticalSpeed = 0.1 + (seed % 3) * 0.05;
+    
+    const x = (baseX + frame * speed * driftSpeed) % width;
+    const y = (baseY + Math.sin(frame / fps + seed) * 20 + frame * speed * verticalSpeed) % height;
+    
+    const opacity = 0.2 + 0.3 * Math.sin(frame / fps * speed + seed);
+    
+    return (
+      <circle
+        key={i}
+        cx={x}
+        cy={y}
+        r={size}
+        fill={color}
+        opacity={opacity}
+      >
+        <animate
+          attributeName="opacity"
+          values={`${opacity * 0.5};${opacity};${opacity * 0.5}`}
+          dur={`${2 + seed % 3}s`}
+          repeatCount="indefinite"
+        />
+      </circle>
+    );
+  });
+  
+  return (
+    <svg width="100%" height="100%" style={{ position: "absolute", inset: 0 }}>
+      <defs>
+        <radialGradient id="particleGlow">
+          <stop offset="0%" stopColor={color} stopOpacity={0.5} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </radialGradient>
+      </defs>
+      {particles}
+    </svg>
+  );
 };
 
-interface AmbientGlowProps {
-	color?: string;
-	x?: number;
-	y?: number;
-	size?: number;
-	blur?: number;
-	opacity?: number;
-	animate?: boolean;
+interface FloatingOrbsProps {
+  count?: number;
+  color?: string;
 }
 
-export const AmbientGlow: React.FC<AmbientGlowProps> = ({
-	color = COLORS.primary,
-	x = 50,
-	y = 50,
-	size = 400,
-	blur = 200,
-	opacity = 0.15,
-	animate = true,
+export const FloatingOrbs: React.FC<FloatingOrbsProps> = ({
+  count = 5,
+  color = "#00ffff"
 }) => {
-	const frame = useCurrentFrame();
-	const {width, height} = useVideoConfig();
-
-	const pulseOpacity = animate
-		? interpolate(Math.sin(frame * 0.05), [-1, 1], [0.5, 1])
-		: 1;
-
-	const pulseScale = animate
-		? interpolate(Math.sin(frame * 0.03), [-1, 1], [0.9, 1.1])
-		: 1;
-
-	const posX = (x / 100) * width;
-	const posY = (y / 100) * height;
-
-	return (
-		<div
-			style={{
-				position: 'absolute',
-				left: posX - (size * pulseScale) / 2,
-				top: posY - (size * pulseScale) / 2,
-				width: size * pulseScale,
-				height: size * pulseScale,
-				borderRadius: '50%',
-				background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-				filter: `blur(${blur}px)`,
-				opacity: opacity * pulseOpacity,
-			}}
-		/>
-	);
+  const frame = useCurrentFrame();
+  const { width, height, fps } = useVideoConfig();
+  
+  const orbs = Array.from({ length: count }, (_, i) => {
+    const seed = i * 123.456 + 100;
+    const baseX = width * (0.2 + (i / count) * 0.6);
+    const baseY = height * (0.3 + (i / count) * 0.4);
+    const radiusX = 100 + (i % 3) * 50;
+    const radiusY = 50 + (i % 2) * 30;
+    const speed = 0.5 + (i % 3) * 0.2;
+    
+    const x = baseX + Math.sin(frame / fps * speed + seed) * radiusX;
+    const y = baseY + Math.cos(frame / fps * speed + seed) * radiusY;
+    const size = 30 + (i % 4) * 20;
+    const opacity = 0.05 + 0.03 * Math.sin(frame / fps + seed);
+    
+    return (
+      <div
+        key={i}
+        style={{
+          position: "absolute",
+          left: x,
+          top: y,
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')} 0%, transparent 70%)`,
+          transform: "translate(-50%, -50%)",
+          filter: `blur(${size / 4}px)`,
+        }}
+      />
+    );
+  });
+  
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+      {orbs}
+    </div>
+  );
 };
 
-interface FloatingParticlesProps {
-	count?: number;
-	color?: string;
-	speed?: number;
+interface GradientOverlayProps {
+  colors?: string[];
+  positions?: number[];
+  angle?: number;
+  opacity?: number;
 }
 
-export const FloatingParticles: React.FC<FloatingParticlesProps> = ({
-	count = 50,
-	color = COLORS.primary,
-	speed = 1,
+export const GradientOverlay: React.FC<GradientOverlayProps> = ({
+  colors = ["#0a0a1a", "#0a0a2a", "#0a0a1a"],
+  positions = [0, 0.5, 1],
+  angle = 90,
+  opacity = 0.8
 }) => {
-	const {width, height} = useVideoConfig();
-
-	const particles = useMemo(() => {
-		return Array.from({length: count}, (_, i) => ({
-			id: i,
-			x: Math.random() * width,
-			y: Math.random() * height,
-			size: Math.random() * 3 + 1,
-			speedX: (Math.random() - 0.5) * speed,
-			speedY: (Math.random() - 0.5) * speed,
-			opacity: Math.random() * 0.5 + 0.2,
-		}));
-	}, [count, width, height, speed]);
-
-	return (
-		<>
-			{particles.map((p) => (
-				<div
-					key={p.id}
-					style={{
-						position: 'absolute',
-						left: p.x,
-						top: p.y,
-						width: p.size,
-						height: p.size,
-						borderRadius: '50%',
-						backgroundColor: color,
-						opacity: p.opacity,
-						boxShadow: `0 0 ${p.size * 2}px ${color}`,
-					}}
-				/>
-			))}
-		</>
-	);
+  const { width, height } = useVideoConfig();
+  
+  const radians = (angle * Math.PI) / 180;
+  const x1 = width / 2 - Math.cos(radians) * width;
+  const y1 = height / 2 - Math.sin(radians) * height;
+  const x2 = width / 2 + Math.cos(radians) * width;
+  const y2 = height / 2 + Math.sin(radians) * height;
+  
+  const stops = colors.map((color, i) => (
+    <stop
+      key={i}
+      offset={`${(positions[i] || i / (colors.length - 1)) * 100}%`}
+      stopColor={color}
+    />
+  ));
+  
+  return (
+    <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity }}>
+      <defs>
+        <linearGradient id="ambientGradient" x1={`${x1}px`} y1={`${y1}px`} x2={`${x2}px`} y2={`${y2}px`}>
+          {stops}
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#ambientGradient)" />
+    </svg>
+  );
 };
 
-interface HexagonGridProps {
-	opacity?: number;
+interface VignetteProps {
+  intensity?: number;
+  color?: string;
 }
 
-export const HexagonGrid: React.FC<HexagonGridProps> = ({opacity = 0.1}) => {
-	const frame = useCurrentFrame();
-	const {width, height} = useVideoConfig();
-
-	const hexSize = 30;
-	const hexHeight = hexSize * Math.sqrt(3);
-	const hexWidth = hexSize * 2;
-	const cols = Math.ceil(width / (hexWidth * 0.75)) + 1;
-	const rows = Math.ceil(height / hexHeight) + 1;
-
-	const offsetY = (frame * 0.2) % hexHeight;
-
-	return (
-		<svg
-			width={width}
-			height={height + hexHeight}
-			style={{
-				position: 'absolute',
-				top: -offsetY,
-				opacity,
-			}}
-		>
-			<defs>
-				<pattern
-					id="hexPattern"
-					width={hexWidth * 0.75}
-					height={hexHeight}
-					patternUnits="userSpaceOnUse"
-				>
-					<polygon
-						points={`${hexSize},0 ${hexSize * 2},${hexHeight / 2} ${hexSize},${hexHeight} 0,${hexHeight / 2}`}
-						fill="none"
-						stroke={COLORS.dim}
-						strokeWidth="1"
-					/>
-				</pattern>
-			</defs>
-			<rect width="100%" height="200%" fill="url(#hexPattern)" />
-		</svg>
-	);
+export const Vignette: React.FC<VignetteProps> = ({
+  intensity = 0.5,
+  color = "#000000"
+}) => {
+  const { width, height } = useVideoConfig();
+  
+  return (
+    <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+      <defs>
+        <radialGradient id="vignetteGradient">
+          <stop offset="40%" stopColor={color} stopOpacity={0} />
+          <stop offset="100%" stopColor={color} stopOpacity={intensity} />
+        </radialGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#vignetteGradient)" />
+    </svg>
+  );
 };
 
-interface CircuitLinesProps {
-	opacity?: number;
+interface AnimatedBackgroundProps {
+  style?: "grid" | "particles" | "orbs" | "gradient" | "all";
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
-export const CircuitLines: React.FC<CircuitLinesProps> = ({opacity = 0.2}) => {
-	const frame = useCurrentFrame();
-	const {width, height} = useVideoConfig();
-
-	const drawLength = interpolate(frame, [0, 180], [0, width * 1.5], {
-		extrapolateRight: 'clamp',
-	});
-
-	const pathD = `
-		M 0 ${height * 0.3}
-		L ${width * 0.2} ${height * 0.3}
-		L ${width * 0.2} ${height * 0.5}
-		L ${width * 0.5} ${height * 0.5}
-		L ${width * 0.5} ${height * 0.2}
-		L ${width * 0.8} ${height * 0.2}
-		L ${width * 0.8} ${height * 0.7}
-		L ${width} ${height * 0.7}
-	`;
-
-	return (
-		<svg
-			width={width}
-			height={height}
-			style={{position: 'absolute', top: 0, left: 0, opacity}}
-		>
-			<defs>
-				<linearGradient id="circuitFade" x1="0%" y1="0%" x2="100%" y2="0%">
-					<stop offset="0%" stopColor={COLORS.primary} stopOpacity="0" />
-					<stop offset="50%" stopColor={COLORS.primary} stopOpacity="1" />
-					<stop offset="100%" stopColor={COLORS.primary} stopOpacity="0" />
-				</linearGradient>
-			</defs>
-			<path
-				d={pathD}
-				fill="none"
-				stroke="url(#circuitFade)"
-				strokeWidth="2"
-				strokeDasharray={`${drawLength} ${width}`}
-			/>
-			<circle cx={width * 0.2} cy={height * 0.3} r="4" fill={COLORS.primary} />
-			<circle cx={width * 0.5} cy={height * 0.5} r="4" fill={COLORS.primary} />
-			<circle cx={width * 0.8} cy={height * 0.7} r="4" fill={COLORS.primary} />
-		</svg>
-	);
+export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
+  style = "all",
+  primaryColor = "#00ffff",
+  secondaryColor = "#0088ff"
+}) => {
+  const { width, height } = useVideoConfig();
+  
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        backgroundColor: "#0a0a1a",
+        overflow: "hidden",
+      }}
+    >
+      {(style === "grid" || style === "all") && (
+        <BackgroundGrid opacity={0.08} animated />
+      )}
+      
+      {(style === "particles" || style === "all") && (
+        <AmbientParticles count={40} color={primaryColor} />
+      )}
+      
+      {(style === "orbs" || style === "all") && (
+        <FloatingOrbs count={4} color={primaryColor} />
+      )}
+      
+      {(style === "gradient" || style === "all") && (
+        <GradientOverlay
+          colors={["#0a0a1a", "#0a1525", "#0a0a1a"]}
+          angle={135}
+          opacity={0.6}
+        />
+      )}
+      
+      <Vignette intensity={0.4} />
+    </div>
+  );
 };
