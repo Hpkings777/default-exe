@@ -1,5 +1,1 @@
 node_modules/
-Outputs/*.mp4
-.env
-.DS_Store
-*.log
