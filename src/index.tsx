@@ -1,7 +1,8 @@
-import { Composition } from 'remotion';
+import { Composition, registerRoot } from 'remotion';
 import { OhmsLawAnimation } from './OhmsLawAnimation';
+import React from 'react';
 
-export const RemotionRoot: React.FC = () => {
+const RemotionRoot: React.FC = () => {
   const FPS = 30;
   const SCENE_DURATIONS = {
     scene1: 10 * FPS,
@@ -16,13 +17,25 @@ export const RemotionRoot: React.FC = () => {
   const totalDuration = Object.values(SCENE_DURATIONS).reduce((a, b) => a + b, 0);
 
   return (
-    <Composition
-      id="OHMS_LAW"
-      component={OhmsLawAnimation}
-      durationInFrames={totalDuration}
-      fps={FPS}
-      width={1920}
-      height={1080}
-    />
+    <>
+      <Composition
+        id="OHMS_LAW"
+        component={OhmsLawAnimation}
+        durationInFrames={totalDuration}
+        fps={FPS}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="DEFAULT_EXE"
+        component={OhmsLawAnimation}
+        durationInFrames={totalDuration}
+        fps={FPS}
+        width={1920}
+        height={1080}
+      />
+    </>
   );
 };
+
+registerRoot(RemotionRoot);
