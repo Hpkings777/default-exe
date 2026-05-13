@@ -33,9 +33,7 @@ jobs:
         run: npm install
 
       - name: Render video
-        run: |
-          COMPOSITION="${{ inputs.composition }}"
-          npx remotion render src/index.tsx "$COMPOSITION" Outputs/video.mp4 --overwrite
+        run: npx remotion render src/index.tsx OHMS_LAW Outputs/video.mp4 --overwrite
 
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
