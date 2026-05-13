@@ -34,7 +34,8 @@ jobs:
         run: mkdir -p out
 
       - name: Render video
-        run: npx @remotion/cli@4.0.441 render src/index.tsx OHMS_LAW out/ohms-law.mp4 --overwrite
+        run: |
+          npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx OHMS_LAW out/ohms-law.mp4 --overwrite
 
       - name: Upload video
         uses: actions/upload-artifact@v4
