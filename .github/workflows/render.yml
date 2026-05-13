@@ -46,7 +46,7 @@ jobs:
           sudo dpkg -i /var/cache/apt/archives/*.deb 2>/dev/null || true
 
       - name: Install npm dependencies
-        run: npm ci
+        run: npm install
 
       - name: Create output directory
         run: mkdir -p out
