@@ -35,19 +35,11 @@ jobs:
 
       - name: Render video
         run: |
-          if [ "${{ inputs.composition }}" = "OHMS_LAW" ]; then
-            echo "Rendering Ohm's Law animation..."
-            npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx OHMS_LAW out/ohms-law.mp4 --overwrite --bundle-cache=false
-          else
-            echo "Rendering DEFAULT_EXE..."
-            npx --yes @remotion/cli@4.0.441 -- remotion render src/index.tsx DEFAULT_EXE out/default-exe.mp4 --overwrite --bundle-cache=false
-          fi
+          npx remotion@4.0.441 render src/index.tsx OHMS_LAW out/ohms-law.mp4 --overwrite
 
       - name: Upload video
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.composition }}-video-${{ github.run_number }}
-          path: |
-            out/ohms-law.mp4
-            out/default-exe.mp4
+          name: ohms-law-video-${{ github.run_number }}
+          path: out/ohms-law.mp4
           retention-days: 30
