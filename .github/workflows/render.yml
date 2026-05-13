@@ -55,7 +55,7 @@ jobs:
         run: |
           COMPOSITION="${{ inputs.composition }}"
           OUTPUT_FILE="out/$(echo "$COMPOSITION" | tr '[:upper:]' '[:lower:]' | tr '_' '-').mp4"
-          npx -y @remotion/cli@latest render src/index.tsx "$COMPOSITION" "$OUTPUT_FILE" --overwrite --bundle-cache=false
+          npm exec -- @remotion/cli@4.0.441 render src/index.tsx "$COMPOSITION" "$OUTPUT_FILE" --overwrite --bundle-cache=false
 
       - name: Upload video
         uses: actions/upload-artifact@v4
