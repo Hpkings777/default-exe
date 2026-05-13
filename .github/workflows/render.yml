@@ -1,21 +1,11 @@
-name: Render Video
+name: Render Ohm's Law
 
 on:
   workflow_dispatch:
-    inputs:
-      composition:
-        description: 'Composition to render'
-        required: true
-        default: 'OHMS_LAW'
-        type: choice
-        options:
-          - OHMS_LAW
-          - DEFAULT_EXE
 
 jobs:
   render:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,22 +15,18 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y ffmpeg libnss3 libatk-bridge2.0-0 libcups2 libdbus-1-3 libdrm2 libgbm1 libasound2t64
-
-      - name: Install npm dependencies
+      - name: Install dependencies
         run: npm install
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libnss3 libatk-bridge2.0-0 libcups2 libdbus-1-3 libdrm2 libgbm1 libasound2t64
+
       - name: Render video
-        run: |
-          mkdir -p Outputs
-          node node_modules/@remotion/cli/dist/index.js render src/index.tsx OHMS_LAW Outputs/video.mp4 --overwrite 2>&1 || echo "Render failed with exit code $?"
-          ls -la Outputs/
+        run: npx remotion render src/index.ts DefaultExe Outputs/video.mp4 --overwrite
 
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
         with:
           name: ohms-law-video
-          path: Outputs/
+          path: Outputs/video.mp4
           retention-days: 30
