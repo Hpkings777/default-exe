@@ -55,8 +55,7 @@ jobs:
         run: |
           COMPOSITION="${{ inputs.composition }}"
           OUTPUT_FILE="out/$(echo "$COMPOSITION" | tr '[:upper:]' '[:lower:]' | tr '_' '-').mp4"
-          ./node_modules/.bin/remotion render src/index.tsx "$COMPOSITION" "$OUTPUT_FILE" --overwrite
-          echo "OUTPUT_FILE=$OUTPUT_FILE" >> $GITHUB_ENV
+          npx remotion render src/index.tsx "$COMPOSITION" "$OUTPUT_FILE" --overwrite --bundle-cache=false
 
       - name: Upload video
         uses: actions/upload-artifact@v4
