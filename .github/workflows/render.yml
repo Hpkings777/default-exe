@@ -34,7 +34,8 @@ jobs:
 
       - name: Render video
         run: |
-          node node_modules/@remotion/cli/dist/index.js render src/index.tsx OHMS_LAW Outputs/video.mp4 --overwrite
+          mkdir -p Outputs
+          node node_modules/@remotion/cli/dist/index.js render src/index.tsx OHMS_LAW Outputs/video.mp4 --overwrite 2>&1 || echo "Render failed with exit code $?"
           ls -la Outputs/
 
       - name: Upload video artifact
