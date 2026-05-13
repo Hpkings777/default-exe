@@ -32,15 +32,14 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      - name: Render video
+- name: Render video
         run: |
-          ls -la node_modules/.bin/
-          ls -la node_modules/@remotion/cli/
           node node_modules/@remotion/cli/dist/index.js render src/index.tsx OHMS_LAW Outputs/video.mp4 --overwrite
+          ls -la Outputs/
 
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.composition }}-video
-          path: Outputs/video.mp4
+          name: ohms-law-video
+          path: Outputs/
           retention-days: 30
